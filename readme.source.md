@@ -29,13 +29,15 @@
 </div>
 ```
 
-Native macOS menu-bar app. Use **Set Up Game Mode…** and **Set Up No AirDrop…** in the menu to check prerequisites before toggling.
+Native macOS menu-bar app. **Toggle → ON/OFF** at the top reflects the next master toggle; **Check Permissions…** at the bottom verifies Xcode and No AirDrop (AWDL) prerequisites.
 
-![Menu screenshot](./.github/assets/menu-screenshot.png)
+![Menu (current layout)](./.github/assets/menu-screenshot.png)
+
+_Regenerate after menu changes: `bun run readme:assets` (uses the same labels as the app)._
 
 ## Requirements
 
-The app checks these for you; use the setup menu items to fix gaps.
+The app checks these for you; use **Check Permissions…** to fix gaps.
 
 ```aura width=860 height=140
 <div style={{

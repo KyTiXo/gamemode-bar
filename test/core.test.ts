@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
 	allAvailableOn,
+	anyFeatureOn,
 	authorizationReady,
 	buildPrerequisites,
 	type Paths,
@@ -237,6 +238,18 @@ describe("master toggle", () => {
 		expect(await fake.log()).toBe("awdl up\ngame auto\n");
 	});
 
+	test("disables when only one feature is on", async () => {
+		const fake = await makeFake("up", "on", "on");
+		const { state } = await toggleMode(fake.paths, fake.run);
+		expect(state).toMatchObject({
+			awdl: "up",
+			gamePolicy: "auto",
+			gameModeChecked: false,
+			noAirDropChecked: false,
+		});
+		expect(await fake.log()).toBe("awdl up\ngame auto\n");
+	});
+
 	test("still toggles AWDL when gamepolicyctl is missing", async () => {
 		const fake = await makeFake("up", "off", "auto", { gamepolicy: null });
 		const { state, warnings } = await toggleMode(fake.paths, fake.run);
@@ -244,6 +257,26 @@ describe("master toggle", () => {
 		expect(state.xcode.available).toBe(false);
 		expect(warnings[0]).toContain("Install full Xcode");
 		expect(await fake.log()).toBe("awdl down\n");
+	});
+});
+
+describe("anyFeatureOn", () => {
+	test("is true when either checkbox is on", () => {
+		expect(
+			anyFeatureOn({
+				awdl: "up",
+				detail: "",
+				gameMode: "on",
+				gameModeChecked: true,
+				gamePolicy: "on",
+				noAirDropChecked: false,
+				xcode: {
+					available: true,
+					reason: "",
+					statusOutput: "",
+				},
+			}),
+		).toBe(true);
 	});
 });
 

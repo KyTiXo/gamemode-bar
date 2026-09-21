@@ -65,7 +65,7 @@ export const pathsFromEnv = (): Paths => ({
 	rm: envPath("RM", "/bin/rm"),
 	sudo: envPath("SUDO", "/usr/bin/sudo"),
 	sudoers: envPath("SUDOERS", "/etc/sudoers.d/gamemode-bar-awdl"),
-	test: envPath("TEST", "/usr/bin/test"),
+	test: envPath("TEST", "/bin/test"),
 	visudo: envPath("VISUDO", "/usr/sbin/visudo"),
 });
 
@@ -374,6 +374,10 @@ export const allAvailableOn = (state: SystemState) => {
 	return gameOn && state.noAirDropChecked;
 };
 
+/** Master toggle treats either checkbox as “on” for the next disable action. */
+export const anyFeatureOn = (state: SystemState) =>
+	state.noAirDropChecked || state.gameModeChecked;
+
 export const setAwdlMode = async (
 	paths: Paths,
 	run: Runner,
@@ -453,7 +457,7 @@ export const toggleMode = async (
 	run: Runner,
 ): Promise<ToggleResult> => {
 	const initial = await readState(paths, run);
-	const disabling = allAvailableOn(initial);
+	const disabling = anyFeatureOn(initial);
 	const warnings: string[] = [];
 	try {
 		if (disabling) {

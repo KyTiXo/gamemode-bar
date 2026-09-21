@@ -11,6 +11,8 @@
 		"dev": "bun run build:debug && ./build/debug/GameModeBar",
 		"lint": "bunx biome check . && swiftc -typecheck -framework AppKit src/native/GameModeBar.swift",
 		"prepare": "husky",
+		"readme:assets": "mkdir -p build && swiftc -framework AppKit -O scripts/render-menu-screenshot.swift -o build/render-menu-screenshot && build/render-menu-screenshot .github/assets/menu-screenshot.png",
+		"readme:build": "bun run readme:assets && bunx readme-aura build",
 		"test": "bun test"
 	},
 	"devDependencies": {

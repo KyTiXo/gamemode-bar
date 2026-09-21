@@ -46,9 +46,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
-    private let setupGameItem = NSMenuItem(title: "Set Up Game Mode…", action: #selector(setupGameMode), keyEquivalent: "")
-    private let setupAirDropItem = NSMenuItem(title: "Set Up No AirDrop…", action: #selector(setupNoAirDrop), keyEquivalent: "")
-    private let toggleItem = NSMenuItem(title: "Toggle Mode", action: #selector(toggleAll), keyEquivalent: "")
+    private let permissionsItem = NSMenuItem(title: "Check Permissions…", action: #selector(checkPermissions), keyEquivalent: "")
+    private let toggleItem = NSMenuItem(title: "Toggle → ON", action: #selector(toggleAll), keyEquivalent: "")
     private let gameItem = NSMenuItem(title: "macOS Game Mode", action: #selector(toggleGame), keyEquivalent: "")
     private let airDropItem = NSMenuItem(title: "No AirDrop", action: #selector(toggleAirDrop), keyEquivalent: "")
     private var busy = false
@@ -58,22 +57,22 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-        statusItem.button?.image = Self.statusImage(mode: .off)
-        statusItem.button?.image?.isTemplate = true
+        if #available(macOS 13.0, *) {
+            statusItem.isVisible = true
+        }
+        applyStatusIcon(mode: .off)
         statusItem.button?.toolTip = "Game Mode Bar"
-        setupGameItem.target = self
-        setupAirDropItem.target = self
+        permissionsItem.target = self
         toggleItem.target = self
         gameItem.target = self
         airDropItem.target = self
         menu.delegate = self
-        menu.addItem(setupGameItem)
-        menu.addItem(setupAirDropItem)
-        menu.addItem(.separator())
         menu.addItem(toggleItem)
         menu.addItem(.separator())
         menu.addItem(gameItem)
         menu.addItem(airDropItem)
+        menu.addItem(.separator())
+        menu.addItem(permissionsItem)
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "Quit", action: #selector(terminate), keyEquivalent: "q")
         quit.target = self
@@ -93,51 +92,68 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         NSApp.terminate(nil)
     }
 
-    @objc private func setupGameMode() {
+    @objc private func checkPermissions() {
         guard let prereq = lastPrerequisites else { return }
+        let xcodeOk = prereq.xcode.ok
+        let awdlOk = prereq.awdlAuth.ok
+
         let alert = NSAlert()
         alert.alertStyle = .informational
-        if prereq.xcode.ok {
-            alert.messageText = "Game Mode is ready"
-            alert.informativeText = lastState?.detail ?? "Full Xcode and gamepolicyctl are available."
-            alert.addButton(withTitle: "OK")
-        } else {
-            alert.messageText = "Full Xcode required"
-            alert.informativeText = prereq.xcode.reason
-            alert.addButton(withTitle: "Open App Store")
-            alert.addButton(withTitle: "Cancel")
-            NSApp.activate(ignoringOtherApps: true)
-            if alert.runModal() == .alertFirstButtonReturn {
-                NSWorkspace.shared.open(Self.xcodeAppStoreURL)
-            }
-            return
-        }
         NSApp.activate(ignoringOtherApps: true)
-        alert.runModal()
-    }
 
-    @objc private func setupNoAirDrop() {
-        guard let prereq = lastPrerequisites else { return }
-        if prereq.awdlAuth.ok {
-            let alert = NSAlert()
-            alert.alertStyle = .informational
-            alert.messageText = "No AirDrop is ready"
-            alert.informativeText = "Passwordless ifconfig awdl0 up/down is already authorized for this account."
+        if xcodeOk && awdlOk {
+            alert.messageText = "Permissions look good"
+            alert.informativeText = """
+            Game Mode: full Xcode and gamepolicyctl are available.
+            No AirDrop: passwordless ifconfig awdl0 up/down is authorized.
+            """
             alert.addButton(withTitle: "OK")
-            NSApp.activate(ignoringOtherApps: true)
             alert.runModal()
             return
         }
-        let alert = NSAlert()
-        alert.alertStyle = .informational
-        alert.messageText = "One-time AWDL authorization"
-        alert.informativeText = "Game Mode Bar installs one exact root:wheel 0440 sudoers rule, validated by visudo, that only permits awdl0 up/down. Password entry is handled by macOS and is never read or stored by this app."
-        alert.addButton(withTitle: "Authorize")
+
+        var lines: [String] = []
+        if xcodeOk {
+            lines.append("Game Mode: ready.")
+        } else {
+            lines.append("Game Mode: \(prereq.xcode.reason)")
+        }
+        if awdlOk {
+            lines.append("No AirDrop: ready.")
+        } else {
+            lines.append("No AirDrop: one-time sudoers authorization required for ifconfig awdl0 up/down.")
+        }
+        alert.messageText = "Permissions incomplete"
+        alert.informativeText = lines.joined(separator: "\n")
+
+        if !awdlOk {
+            alert.addButton(withTitle: "Authorize No AirDrop")
+        }
+        if !xcodeOk {
+            alert.addButton(withTitle: "Open App Store for Xcode")
+        }
         alert.addButton(withTitle: "Cancel")
-        NSApp.activate(ignoringOtherApps: true)
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-        execute("setup") { [weak self] response in
-            self?.finish(response, reportErrors: true)
+
+        let choice = alert.runModal()
+        if !awdlOk, choice == .alertFirstButtonReturn {
+            let authAlert = NSAlert()
+            authAlert.alertStyle = .informational
+            authAlert.messageText = "One-time AWDL authorization"
+            authAlert.informativeText = "Game Mode Bar installs one exact root:wheel 0440 sudoers rule, validated by visudo, that only permits awdl0 up/down. Password entry is handled by macOS and is never read or stored by this app."
+            authAlert.addButton(withTitle: "Authorize")
+            authAlert.addButton(withTitle: "Cancel")
+            guard authAlert.runModal() == .alertFirstButtonReturn else { return }
+            execute("setup") { [weak self] response in
+                self?.finish(response, reportErrors: true)
+            }
+            return
+        }
+        if !xcodeOk {
+            let xcodeButton: NSApplication.ModalResponse =
+                awdlOk ? .alertFirstButtonReturn : .alertSecondButtonReturn
+            if choice == xcodeButton {
+                NSWorkspace.shared.open(Self.xcodeAppStoreURL)
+            }
         }
     }
 
@@ -202,8 +218,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
     private func setBusy(_ value: Bool) {
         busy = value
-        setupGameItem.isEnabled = !value
-        setupAirDropItem.isEnabled = !value
+        permissionsItem.isEnabled = !value
         toggleItem.isEnabled = !value
         gameItem.isEnabled = !value && (lastState?.xcode.available ?? false)
         airDropItem.isEnabled = !value
@@ -283,31 +298,41 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         case error
     }
 
-    private static func statusImage(mode: IconMode) -> NSImage? {
-        let base = NSImage(systemSymbolName: "gamecontroller.fill", accessibilityDescription: "Game Mode Bar")
-        base?.isTemplate = true
-        guard mode != .off, let base else { return base }
-        let size = NSSize(width: 22, height: 18)
-        let composed = NSImage(size: size)
-        composed.lockFocus()
-        let rect = NSRect(origin: .zero, size: size)
-        base.draw(in: rect)
-        if mode == .on {
-            if let leaf = NSImage(systemSymbolName: "leaf.fill", accessibilityDescription: "Active") {
-                leaf.isTemplate = true
-                let badge = NSRect(x: size.width - 10, y: 0, width: 10, height: 10)
-                leaf.draw(in: badge)
-            }
-        } else if mode == .error {
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: NSFont.boldSystemFont(ofSize: 11),
-                .foregroundColor: NSColor.labelColor
-            ]
-            "?".draw(in: NSRect(x: size.width - 11, y: -1, width: 11, height: 12), withAttributes: attrs)
+    private static func statusSymbolName(mode: IconMode) -> String {
+        switch mode {
+        case .off:
+            return "gamecontroller"
+        case .on:
+            return "gamecontroller.fill"
+        case .error:
+            return "exclamationmark.triangle.fill"
         }
-        composed.unlockFocus()
-        composed.isTemplate = true
-        return composed
+    }
+
+    private static func statusImage(mode: IconMode) -> NSImage? {
+        let image = NSImage(
+            systemSymbolName: statusSymbolName(mode: mode),
+            accessibilityDescription: "Game Mode Bar"
+        )
+        image?.isTemplate = true
+        return image
+    }
+
+    private func updateToggleTitle(from state: ModeState?) {
+        guard let state else {
+            toggleItem.title = "Toggle Mode"
+            return
+        }
+        let anyOn = state.gameModeChecked || state.noAirDropChecked
+        toggleItem.title = anyOn ? "Toggle → OFF" : "Toggle → ON"
+    }
+
+    private func applyStatusIcon(mode: IconMode) {
+        let image = Self.statusImage(mode: mode)
+        statusItem.button?.image = image
+        statusItem.button?.image?.isTemplate = true
+        // Fallback if SF Symbols fail to load (blank menu bar otherwise).
+        statusItem.button?.title = image == nil ? "GM" : ""
     }
 
     private func finish(_ response: ControllerResponse, reportErrors: Bool) {
@@ -322,14 +347,16 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
             gameItem.toolTip = state.xcode.available ? state.detail : state.xcode.reason
             airDropItem.toolTip = state.detail
             let anyOn = state.gameModeChecked || state.noAirDropChecked
-            statusItem.button?.image = Self.statusImage(mode: anyOn ? .on : .off)
+            updateToggleTitle(from: state)
+            applyStatusIcon(mode: anyOn ? .on : .off)
             statusItem.button?.toolTip = state.detail
         } else {
             lastState = nil
             gameItem.state = .off
             airDropItem.state = .off
             gameItem.isEnabled = false
-            statusItem.button?.image = Self.statusImage(mode: .error)
+            updateToggleTitle(from: nil)
+            applyStatusIcon(mode: .error)
             statusItem.button?.toolTip = "Game Mode Bar state unavailable"
         }
         setBusy(false)
