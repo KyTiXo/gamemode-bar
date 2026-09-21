@@ -1,0 +1,23 @@
+{
+	"name": "gamemode-bar",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"build": "bun run scripts/build.ts app",
+		"build:debug": "bun run scripts/build.ts debug",
+		"check": "bun test && bun run lint",
+		"commitlint": "commitlint --edit",
+		"dev": "bun run build:debug && ./build/debug/GameModeBar",
+		"lint": "bunx biome check . && swiftc -typecheck -framework AppKit src/native/GameModeBar.swift",
+		"prepare": "husky",
+		"test": "bun test"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.4",
+		"@commitlint/cli": "^21.2.3",
+		"@commitlint/config-conventional": "^21.2.3",
+		"@types/bun": "latest",
+		"husky": "^9.1.7"
+	}
+}

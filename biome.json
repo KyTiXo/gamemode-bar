@@ -1,0 +1,15 @@
+{
+	"formatter": {
+		"indentStyle": "tab"
+	},
+	"files": {
+		"includes": [
+			"**",
+			"!.hutch",
+			"!.cottontail-tmp",
+			"!artifacts",
+			"!build",
+			"!node_modules"
+		]
+	}
+}
