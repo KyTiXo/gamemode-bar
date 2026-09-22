@@ -38,8 +38,17 @@ Bun resolves from `GAME_MODE_BAR_BUN`, `~/.bun/bin`, Homebrew, or `PATH`. Overri
 * CI builds an unsigned ad-hoc `.app` zip attached to GitHub **prereleases**.
 * Not at 1.0 yet.
 
-## Install (future)
+## Install
 
-Homebrew cask planned (`brew install --cask gamemode-bar`). Until then, download the latest prerelease from GitHub Releases.
+Homebrew (beta, in-repo tap):
+
+```sh
+brew tap KyTiXo/gamemode-bar https://github.com/KyTiXo/gamemode-bar.git
+brew install --cask gamemode-bar
+```
+
+Requires [Bun](https://bun.sh) (pulled in by the cask). Full Xcode and one-time sudoers setup still apply — use **Settings → Check Permissions…** after install.
+
+Or download the latest prerelease zip from [GitHub Releases](https://github.com/KyTiXo/gamemode-bar/releases).
 
 MIT. See [LICENSE](LICENSE).

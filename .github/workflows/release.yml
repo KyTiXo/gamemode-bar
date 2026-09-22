@@ -32,3 +32,26 @@ jobs:
             --title "Game Mode Bar ${GITHUB_REF_NAME}" \
             --notes "Beta build (unsigned ad-hoc). Gatekeeper may prompt on first open. Use Check Permissions for Xcode and No AirDrop prerequisites." \
             "Game-Mode-Bar-${GITHUB_REF_NAME}.zip"
+      - name: Bump Homebrew cask on main
+        env:
+          ZIP: "Game-Mode-Bar-${GITHUB_REF_NAME}.zip"
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          SHA256=$(shasum -a 256 "$ZIP" | awk '{print $1}')
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+          bun run scripts/update-cask.ts "$VERSION" "$SHA256"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/gamemode-bar.rb
+          git diff --staged --quiet || git commit -m "chore: bump Homebrew cask to v${VERSION}"
+          git push origin main
+      - name: Smoke install cask from release
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/kytixo"
+          ln -sfn "${{ github.workspace }}" "$(brew --repository)/Library/Taps/kytixo/homebrew-gamemode-bar"
+          brew install --cask gamemode-bar
+          brew uninstall --cask gamemode-bar

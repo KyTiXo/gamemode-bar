@@ -15,3 +15,13 @@ jobs:
           bun-version: latest
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - name: Register in-repo tap
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/kytixo"
+          ln -sfn "${{ github.workspace }}" "$(brew --repository)/Library/Taps/kytixo/homebrew-gamemode-bar"
+      - name: Lint Homebrew cask
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          brew style --cask kytixo/gamemode-bar/gamemode-bar
+          brew audit --cask kytixo/gamemode-bar/gamemode-bar
