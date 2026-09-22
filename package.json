@@ -8,11 +8,11 @@
 		"build:debug": "bun run scripts/build.ts debug",
 		"check": "bun test && bun run lint",
 		"commitlint": "commitlint --edit",
-		"dev": "bun run build:debug && ./build/debug/GameModeBar",
+		"dev": "bun run install:local",
+		"install:local": "bun run scripts/install-local.ts",
 		"lint": "bunx biome check . && swiftc -typecheck -framework AppKit src/native/GameModeBar.swift",
 		"prepare": "husky",
-		"readme:assets": "mkdir -p build && swiftc -framework AppKit -O scripts/render-menu-screenshot.swift -o build/render-menu-screenshot && build/render-menu-screenshot .github/assets/menu-screenshot.png",
-		"readme:build": "bun run readme:assets && bunx readme-aura build",
+		"readme:build": "bunx readme-aura build",
 		"test": "bun test"
 	},
 	"devDependencies": {

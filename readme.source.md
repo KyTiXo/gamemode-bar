@@ -1,43 +1,22 @@
+![Game Mode Bar, menu-bar Game Mode for play, emulators, and AirPlay](./.github/assets/readme-banner.png)
 
+Native macOS menu-bar app. No Electron. **Toggle → ON/OFF** is the master switch. Individual rows tune **macOS Game Mode** and **No AirDrop** (AWDL down). Open **Settings…** and use **Check Permissions…** for Xcode and sudoers setup.
 
-```aura width=860 height=180
-<div style={{
-  width: '100%', height: '100%', background: 'linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%)',
-  display: 'flex', alignItems: 'center', fontFamily: 'Inter',
-  position: 'relative', overflow: 'hidden', borderRadius: 16,
-  border: '1px solid rgba(255,255,255,0.08)'
-}}>
-  <div style={{
-    position: 'absolute', left: 40, top: 40, width: 72, height: 72,
-    borderRadius: 18, background: 'rgba(255,255,255,0.06)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 36
-  }}>🎮</div>
-  <div style={{ display:'flex', flexDirection:'column', marginLeft:132, gap:6, zIndex: 10 }}>
-    <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-      <span style={{ fontSize:34, fontWeight:800, color:'#f5f5f7', letterSpacing:'-0.5px' }}>Game Mode Bar</span>
-      <span style={{
-        display:'flex', padding:'4px 10px', borderRadius:999,
-        background:'rgba(48,209,88,0.18)', border:'1px solid rgba(48,209,88,0.45)',
-        color:'#30d158', fontSize:11, fontWeight:700, letterSpacing:'0.6px'
-      }}>BETA 0.x</span>
-    </div>
-    <div style={{ display:'flex', fontSize:15, color:'rgba(235,235,245,0.72)', maxWidth:620, lineHeight:1.45 }}>
-      Menu-bar control for macOS Game Mode policy and optional No AirDrop (AWDL down). Native AppKit + Bun. No Electron.
-    </div>
-  </div>
-</div>
-```
+## Why use it
 
-Native macOS menu-bar app. **Toggle → ON/OFF** at the top reflects the next master toggle; **Check Permissions…** at the bottom verifies Xcode and No AirDrop (AWDL) prerequisites.
+Apple’s automatic Game Mode is hit-or-miss. It often skips emulators, streamers, and full-screen apps that still need the policy boost. Game Mode Bar forces the same path macOS uses when it _does_ engage Game Mode, from a persistent menu-bar control.
 
-![Menu (current layout)](./.github/assets/menu-screenshot.png)
+It can help reduce stutter and frame pacing issues when:
 
-_Regenerate after menu changes: `bun run readme:assets` (uses the same labels as the app)._
+- **AirPlaying** video or games to a TV (AWDL traffic fighting the same Wi‑Fi)
+- **Emulators and PC/console streaming** (shadPS4, Moonlight, other full-screen play)
+- **Apps macOS doesn’t treat as games**, even when you’re on a controller
+
+Results vary by Mac, network, and workload. This is a policy toggle, not a magic FPS patch.
 
 ## Requirements
 
-The app checks these for you; use **Check Permissions…** to fix gaps.
+The app checks these for you. Use **Settings → Check Permissions…** to fix gaps.
 
 ```aura width=860 height=140
 <div style={{
@@ -48,7 +27,7 @@ The app checks these for you; use **Check Permissions…** to fix gaps.
 }}>
   <div style={{ display: 'flex', fontSize: 13, fontWeight: 700, color: '#f5f5f7', letterSpacing: '0.3px' }}>Before you toggle</div>
   <div style={{ display: 'flex', fontSize: 13, color: 'rgba(235,235,245,0.78)', lineHeight: 1.5 }}>
-    Full Xcode at /Applications/Xcode.app (not CLT alone).
+    Full Xcode at /Applications/Xcode.app (not CLT alone). Provides gamepolicyctl.
   </div>
   <div style={{ display: 'flex', fontSize: 13, color: 'rgba(235,235,245,0.78)', lineHeight: 1.5 }}>
     One-time sudoers for passwordless ifconfig awdl0 up/down (No AirDrop).
@@ -70,7 +49,7 @@ Bun resolves from `GAME_MODE_BAR_BUN`, `~/.bun/bin`, Homebrew, or `PATH`. Overri
 
 ## Releases (beta)
 
-- Conventional Commits on `main`; maintainers tag `v0.x.y` when a beta binary is ready.
+- Conventional Commits on `main`. Maintainers tag `v0.x.y` when a beta binary is ready.
 - CI builds an unsigned ad-hoc `.app` zip attached to GitHub **prereleases**.
 - Not at 1.0 yet.
 
@@ -78,4 +57,4 @@ Bun resolves from `GAME_MODE_BAR_BUN`, `~/.bun/bin`, Homebrew, or `PATH`. Overri
 
 Homebrew cask planned (`brew install --cask gamemode-bar`). Until then, download the latest prerelease from GitHub Releases.
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

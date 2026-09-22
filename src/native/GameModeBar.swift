@@ -46,10 +46,14 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
+    private let settingsMenu = NSMenu()
+    private let versionItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let permissionsItem = NSMenuItem(title: "Check Permissions…", action: #selector(checkPermissions), keyEquivalent: "")
+    private let settingsItem = NSMenuItem(title: "Settings…", action: nil, keyEquivalent: "")
     private let toggleItem = NSMenuItem(title: "Toggle → ON", action: #selector(toggleAll), keyEquivalent: "")
-    private let gameItem = NSMenuItem(title: "macOS Game Mode", action: #selector(toggleGame), keyEquivalent: "")
-    private let airDropItem = NSMenuItem(title: "No AirDrop", action: #selector(toggleAirDrop), keyEquivalent: "")
+    private let gameItem = NSMenuItem(title: "Game Mode", action: #selector(toggleGame), keyEquivalent: "")
+    private let airDropItem = NSMenuItem(title: "No AirDrop (AWDL)", action: #selector(toggleAirDrop), keyEquivalent: "")
+    private let quitItem = NSMenuItem(title: "Quit Game Mode Bar", action: #selector(terminate), keyEquivalent: "q")
     private var busy = false
     private var timer: Timer?
     private var lastState: ModeState?
@@ -66,17 +70,28 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         toggleItem.target = self
         gameItem.target = self
         airDropItem.target = self
+        quitItem.target = self
+
+        versionItem.isEnabled = false
+        versionItem.title = "Version \(Self.appVersion)"
+
+        settingsMenu.addItem(versionItem)
+        settingsMenu.addItem(.separator())
+        settingsMenu.addItem(permissionsItem)
+
+        settingsItem.submenu = settingsMenu
+        settingsItem.image = Self.menuSymbol("gearshape")
+        quitItem.image = Self.menuSymbol("minus.square")
+
         menu.delegate = self
         menu.addItem(toggleItem)
         menu.addItem(.separator())
         menu.addItem(gameItem)
         menu.addItem(airDropItem)
         menu.addItem(.separator())
-        menu.addItem(permissionsItem)
+        menu.addItem(settingsItem)
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit", action: #selector(terminate), keyEquivalent: "q")
-        quit.target = self
-        menu.addItem(quit)
+        menu.addItem(quitItem)
         statusItem.menu = menu
         refresh(reportErrors: true)
         timer = .scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
@@ -222,7 +237,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         toggleItem.isEnabled = !value
         gameItem.isEnabled = !value && (lastState?.xcode.available ?? false)
         airDropItem.isEnabled = !value
-        menu.items.last?.isEnabled = !value
+        settingsItem.isEnabled = !value
+        quitItem.isEnabled = !value
     }
 
     private func execute(_ command: String, completion: @escaping (ControllerResponse) -> Void) {
@@ -318,6 +334,56 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         return image
     }
 
+    private static func menuSymbol(_ name: String) -> NSImage? {
+        let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+        image?.isTemplate = true
+        return image
+    }
+
+    private static var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+    }
+
+    /// Shared tab stop so **On** / **Off** line up on the trailing edge of the menu.
+    private static let featureStatusTabLocation: CGFloat = 196
+
+    private static func featureRowAttributedTitle(label: String, on: Bool) -> NSAttributedString {
+        let status = on ? "On" : "Off"
+        let string = "\(label)\t\(status)"
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.tabStops = [
+            NSTextTab(textAlignment: .right, location: featureStatusTabLocation, options: [:]),
+        ]
+        let font = NSFont.menuFont(ofSize: NSFont.systemFontSize)
+        let attributed = NSMutableAttributedString(
+            string: string,
+            attributes: [
+                .font: font,
+                .paragraphStyle: paragraph,
+                .foregroundColor: NSColor.labelColor,
+            ]
+        )
+        let statusRange = (string as NSString).range(of: status)
+        attributed.addAttribute(.foregroundColor, value: NSColor.secondaryLabelColor, range: statusRange)
+        return attributed
+    }
+
+    private func applyFeatureRow(_ item: NSMenuItem, label: String, on: Bool) {
+        let status = on ? "On" : "Off"
+        item.title = "\(label), \(status)"
+        item.attributedTitle = Self.featureRowAttributedTitle(label: label, on: on)
+    }
+
+    private func updateFeatureRows(from state: ModeState?) {
+        guard let state else {
+            applyFeatureRow(gameItem, label: "Game Mode", on: false)
+            applyFeatureRow(airDropItem, label: "No AirDrop (AWDL)", on: false)
+            return
+        }
+        applyFeatureRow(gameItem, label: "Game Mode", on: state.gameModeChecked)
+        applyFeatureRow(airDropItem, label: "No AirDrop (AWDL)", on: state.noAirDropChecked)
+    }
+
     private func updateToggleTitle(from state: ModeState?) {
         guard let state else {
             toggleItem.title = "Toggle Mode"
@@ -341,8 +407,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         }
         if let state = response.state {
             lastState = state
-            gameItem.state = state.gameModeChecked ? .on : .off
-            airDropItem.state = state.noAirDropChecked ? .on : .off
+            updateFeatureRows(from: state)
             gameItem.isEnabled = !busy && state.xcode.available
             gameItem.toolTip = state.xcode.available ? state.detail : state.xcode.reason
             airDropItem.toolTip = state.detail
@@ -352,8 +417,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
             statusItem.button?.toolTip = state.detail
         } else {
             lastState = nil
-            gameItem.state = .off
-            airDropItem.state = .off
+            updateFeatureRows(from: nil)
             gameItem.isEnabled = false
             updateToggleTitle(from: nil)
             applyStatusIcon(mode: .error)
