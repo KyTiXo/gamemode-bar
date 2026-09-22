@@ -1,6 +1,6 @@
 cask "gamemode-bar" do
-  version "0.2.3"
-  sha256 "cf70743d88932d5767a8949e4a44e92a2e9d2af1a0dfe0d5c8d950c57e8f6cca"
+  version "0.2.4"
+  sha256 "30df84083fcb66505b1e1f4b51a84e0665432ba75a3f3496750ec8f9e46a229d"
 
   url "https://github.com/KyTiXo/gamemode-bar/releases/download/v#{version}/Game-Mode-Bar-v#{version}.zip"
   name "Game Mode Bar"
