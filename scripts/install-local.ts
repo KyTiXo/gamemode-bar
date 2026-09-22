@@ -26,5 +26,13 @@ await run(["pkill", "-x", "GameModeBar"], true);
 await Bun.sleep(400);
 
 await run(["open", "-a", appPath]);
+await run(
+	[
+		"/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+		"-f",
+		appPath,
+	],
+	true,
+);
 
 console.log(`Installed and launched ${appPath}`);

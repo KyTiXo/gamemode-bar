@@ -30,7 +30,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --prerelease \
             --title "Game Mode Bar ${GITHUB_REF_NAME}" \
-            --notes "Beta build (unsigned ad-hoc). Gatekeeper may prompt on first open. Use Check Permissions for Xcode and No AirDrop prerequisites." \
+            --notes "Beta build (ad-hoc signed, not notarized). Gatekeeper may prompt on first open — right-click the app and choose Open if needed. Use Settings → Check Permissions for Xcode and No AirDrop prerequisites." \
             "Game-Mode-Bar-${GITHUB_REF_NAME}.zip"
       - name: Bump Homebrew cask on main
         run: |

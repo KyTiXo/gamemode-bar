@@ -25,13 +25,13 @@ Or download the latest prerelease zip from [GitHub Releases](https://github.com/
 
 ## Why use it
 
-Apple’s automatic Game Mode is hit-or-miss. It often skips emulators, streamers, and full-screen apps that still need the policy boost. Game Mode Bar forces the same path macOS uses when it *does* engage Game Mode, from a persistent menu-bar control.
+Apple’s automatic Game Mode is hit-or-miss. It often skips emulators, streamers, and full-screen apps that still need the policy boost. Game Mode Bar forces the same path macOS uses when it _does_ engage Game Mode, from a persistent menu-bar control.
 
 It can help reduce stutter and frame pacing issues when:
 
-* **AirPlaying** video or games to a TV (AWDL traffic fighting the same Wi‑Fi)
-* **Emulators and PC/console streaming** (shadPS4, Moonlight, other full-screen play)
-* **Apps macOS doesn’t treat as games**, even when you’re on a controller
+- **AirPlaying** video or games to a TV (AWDL traffic fighting the same Wi‑Fi)
+- **Emulators and PC/console streaming** (shadPS4, Moonlight, other full-screen play)
+- **Apps macOS doesn’t treat as games**, even when you’re on a controller
 
 Results vary by Mac, network, and workload. This is a policy toggle, not a magic FPS patch.
 
@@ -53,8 +53,8 @@ Bun resolves from `GAME_MODE_BAR_BUN`, `~/.bun/bin`, Homebrew, or `PATH`. Overri
 
 ## Releases (beta)
 
-* Conventional Commits on `main`. Maintainers tag `v0.x.y` when a beta binary is ready.
-* CI builds an ad-hoc signed, not notarized `.app` zip attached to GitHub **prereleases**.
-* Not at 1.0 yet.
+- Conventional Commits on `main`. Maintainers tag `v0.x.y` when a beta binary is ready.
+- CI builds an ad-hoc signed, not notarized `.app` zip attached to GitHub **prereleases**.
+- Not at 1.0 yet.
 
 MIT. See [LICENSE](LICENSE).

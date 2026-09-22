@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import ServiceManagement
 
 private struct XcodeProbe: Decodable {
     let available: Bool
@@ -43,11 +44,14 @@ private struct ControllerResponse: Decodable {
 
 private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private static let xcodeAppStoreURL = URL(string: "macappstore://apps.apple.com/app/xcode/id497799835")!
+    private static let activateOnLaunchKey = "activateOnLaunch"
 
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
     private let settingsMenu = NSMenu()
     private let versionItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
+    private let runAtStartupItem = NSMenuItem(title: "Run at startup", action: #selector(toggleRunAtStartup), keyEquivalent: "")
+    private let activateOnLaunchItem = NSMenuItem(title: "Activate on launch", action: #selector(toggleActivateOnLaunch), keyEquivalent: "")
     private let permissionsItem = NSMenuItem(title: "Check Permissions…", action: #selector(checkPermissions), keyEquivalent: "")
     private let settingsItem = NSMenuItem(title: "Settings…", action: nil, keyEquivalent: "")
     private let toggleItem = NSMenuItem(title: "Enable Game Mode+", action: #selector(toggleAll), keyEquivalent: "")
@@ -58,6 +62,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     private var timer: Timer?
     private var lastState: ModeState?
     private var lastPrerequisites: Prerequisites?
+    private var pendingLaunchActivation = true
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -67,6 +72,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         applyStatusIcon(mode: .off)
         statusItem.button?.toolTip = "Game Mode Bar"
         permissionsItem.target = self
+        runAtStartupItem.target = self
+        activateOnLaunchItem.target = self
         toggleItem.target = self
         gameItem.target = self
         airDropItem.target = self
@@ -77,7 +84,11 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
         settingsMenu.addItem(versionItem)
         settingsMenu.addItem(.separator())
+        settingsMenu.addItem(runAtStartupItem)
+        settingsMenu.addItem(activateOnLaunchItem)
+        settingsMenu.addItem(.separator())
         settingsMenu.addItem(permissionsItem)
+        refreshSettingsCheckmarks()
 
         settingsItem.submenu = settingsMenu
         settingsItem.image = Self.menuSymbol("gearshape")
@@ -100,7 +111,50 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     }
 
     func menuWillOpen(_ menu: NSMenu) {
+        refreshSettingsCheckmarks()
         refresh(reportErrors: false)
+    }
+
+    @objc private func toggleRunAtStartup() {
+        let service = SMAppService.mainApp
+        do {
+            if service.status == .enabled {
+                try service.unregister()
+            } else if service.status != .requiresApproval {
+                try service.register()
+            }
+        } catch {
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = "Could not update login item"
+            alert.informativeText = error.localizedDescription
+            NSApp.activate(ignoringOtherApps: true)
+            alert.runModal()
+        }
+        refreshSettingsCheckmarks()
+        if SMAppService.mainApp.status == .requiresApproval {
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.messageText = "Login item needs approval"
+            alert.informativeText = "macOS must allow Game Mode Bar under Login Items before it can start at login."
+            alert.addButton(withTitle: "Open Login Items Settings")
+            alert.addButton(withTitle: "Not Now")
+            NSApp.activate(ignoringOtherApps: true)
+            if alert.runModal() == .alertFirstButtonReturn {
+                SMAppService.openSystemSettingsLoginItems()
+            }
+        }
+    }
+
+    @objc private func toggleActivateOnLaunch() {
+        let next = !UserDefaults.standard.bool(forKey: Self.activateOnLaunchKey)
+        UserDefaults.standard.set(next, forKey: Self.activateOnLaunchKey)
+        refreshSettingsCheckmarks()
+    }
+
+    private func refreshSettingsCheckmarks() {
+        runAtStartupItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        activateOnLaunchItem.state = UserDefaults.standard.bool(forKey: Self.activateOnLaunchKey) ? .on : .off
     }
 
     @objc private func terminate() {
@@ -237,7 +291,6 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         toggleItem.isEnabled = !value
         gameItem.isEnabled = !value && (lastState?.xcode.available ?? false)
         airDropItem.isEnabled = !value
-        settingsItem.isEnabled = !value
         quitItem.isEnabled = !value
     }
 
@@ -403,7 +456,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         statusItem.button?.title = image == nil ? "GM" : ""
     }
 
-    private func finish(_ response: ControllerResponse, reportErrors: Bool) {
+    private func applyResponseState(_ response: ControllerResponse) {
         if let prereq = response.prerequisites {
             lastPrerequisites = prereq
         }
@@ -425,6 +478,30 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
             applyStatusIcon(mode: .error)
             statusItem.button?.toolTip = "Game Mode Bar state unavailable"
         }
+    }
+
+    private func activateGameModePlusIfNeeded(from state: ModeState) {
+        if !state.gameModeChecked && state.xcode.available {
+            execute("set-game on") { [weak self] response in
+                guard let self else { return }
+                finish(response, reportErrors: false)
+                activateAwdlIfNeeded()
+            }
+            return
+        }
+        activateAwdlIfNeeded()
+    }
+
+    private func activateAwdlIfNeeded() {
+        guard let state = lastState, !state.noAirDropChecked else { return }
+        guard lastPrerequisites?.awdlAuth.ok == true else { return }
+        execute("set-awdl down") { [weak self] response in
+            self?.finish(response, reportErrors: false)
+        }
+    }
+
+    private func finish(_ response: ControllerResponse, reportErrors: Bool) {
+        applyResponseState(response)
         setBusy(false)
         if reportErrors {
             if let warnings = response.warnings, !warnings.isEmpty {
@@ -443,6 +520,13 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
                 alert.runModal()
             }
         }
+        guard pendingLaunchActivation else { return }
+        pendingLaunchActivation = false
+        guard response.ok,
+              let state = lastState,
+              UserDefaults.standard.bool(forKey: Self.activateOnLaunchKey)
+        else { return }
+        activateGameModePlusIfNeeded(from: state)
     }
 }
 

@@ -11,9 +11,9 @@
 		"sync-version": "bun run scripts/sync-version.ts",
 		"dev": "bun run install:local",
 		"install:local": "bun run scripts/install-local.ts",
-		"lint": "bunx biome check . && swiftc -typecheck -framework AppKit src/native/GameModeBar.swift",
+		"lint": "bunx biome check . && swiftc -typecheck -framework AppKit -framework ServiceManagement src/native/GameModeBar.swift",
 		"prepare": "husky",
-		"readme:build": "bunx readme-aura build",
+		"readme:build": "bunx readme-aura build --source .github/readme.source.md",
 		"release": "standard-version && bun run sync-version && git add src/native/Info.plist && git commit --amend --no-edit --no-verify",
 		"test": "bun test"
 	},

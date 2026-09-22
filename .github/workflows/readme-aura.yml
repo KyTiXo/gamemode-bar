@@ -3,7 +3,7 @@ name: Generate README
 on:
   push:
     branches: [main]
-    paths: ['readme.source.md']
+    paths: ['.github/readme.source.md']
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
@@ -20,4 +20,5 @@ jobs:
       - name: Generate README
         uses: collectioneur/readme-aura@main
         with:
+          source: .github/readme.source.md
           github_token: ${{ secrets.GITHUB_TOKEN }}
