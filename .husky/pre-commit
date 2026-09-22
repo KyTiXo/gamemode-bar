@@ -1,1 +1,7 @@
 bun run lint
+MSG=".git/COMMIT_EDITMSG"
+if [ -f "$MSG" ]; then
+  bunx commitlint --edit "$MSG" || exit 1
+  bun run scripts/bump-version-from-commit.ts "$MSG"
+  git add package.json src/native/Info.plist
+fi

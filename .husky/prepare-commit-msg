@@ -1,3 +1,0 @@
-bunx commitlint --edit "$1" || exit 1
-bun run scripts/bump-version-from-commit.ts "$1"
-git add package.json src/native/Info.plist
