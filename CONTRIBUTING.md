@@ -34,9 +34,9 @@ Keep it small. One concern per PR — if the description says "also", split it.
 
 Use a [Conventional Commits](https://www.conventionalcommits.org/) style title.
 
-Run `bun run check` before you push (or say why you could not).
+Run `scripts/check.sh` before you push (or say why you could not).
 
-If you touch Swift, the controller, core, or build scripts, read [AGENTS.md](AGENTS.md) — maintainers expect `bun run install:local` for the live menu-bar app.
+If you touch Swift, GameModeCore, or build scripts, read [AGENTS.md](AGENTS.md) — maintainers expect `scripts/install-local.sh` for the live menu-bar app.
 
 Menu or Settings changes: a screenshot in the PR helps.
 

@@ -13,4 +13,4 @@ Screenshots help for status-item or Settings changes.
 ## Checklist
 
 - [ ] Focused diff (no "also …")
-- [ ] `bun run check` (or say why not)
+- [ ] `scripts/check.sh` (or say why not)

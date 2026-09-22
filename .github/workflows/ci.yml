@@ -10,11 +10,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
-      - run: bun run check
+      - run: scripts/check.sh
+      - name: Shellcheck install script
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck install.sh
+          else
+            brew install shellcheck
+            shellcheck install.sh
+          fi
       - name: Register in-repo tap
         run: |
           mkdir -p "$(brew --repository)/Library/Taps/kytixo"

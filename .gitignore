@@ -1,9 +1,9 @@
 .DS_Store
 .hutch/
 .cottontail-tmp/
+.build/
 node_modules/
 build/
 dist/
 artifacts/
-*.tsbuildinfo
 .cursor/

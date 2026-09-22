@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+set -eu
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CASK="$ROOT/Casks/gamemode-bar.rb"
+
+VERSION="${1:-}"
+SHA256="${2:-}"
+
+if [ -z "$VERSION" ] || [ -z "$SHA256" ]; then
+	echo "Usage: scripts/update-cask.sh <version> <sha256>" >&2
+	exit 1
+fi
+
+case "$SHA256" in
+	????????????????????????????????????????????????????????????????) ;;
+	*)
+		echo "Expected 64-character sha256" >&2
+		exit 1
+		;;
+esac
+
+TMP="$(mktemp)"
+sed "s/^  version \"[^\"]*\"/  version \"$VERSION\"/" "$CASK" \
+	| sed "s/^  sha256 \"[^\"]*\"/  sha256 \"$SHA256\"/" > "$TMP"
+mv "$TMP" "$CASK"
+echo "Updated Casks/gamemode-bar.rb to $VERSION"

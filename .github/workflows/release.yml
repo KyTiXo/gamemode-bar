@@ -15,12 +15,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
-      - run: bun run check
-      - run: bun run build
+      - name: Verify tag matches Info.plist version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PLIST_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Packaging/Info.plist)
+          if [ "$TAG" != "$PLIST_VERSION" ]; then
+            echo "Tag version $TAG does not match Packaging/Info.plist ($PLIST_VERSION)" >&2
+            exit 1
+          fi
+      - run: scripts/check.sh
+      - run: scripts/build-app.sh
       - name: Package app
         run: ditto -c -k --keepParent "build/Game Mode Bar.app" "Game-Mode-Bar-${GITHUB_REF_NAME}.zip"
       - name: Publish prerelease
@@ -40,7 +44,7 @@ jobs:
           git fetch origin main
           git checkout main
           git pull --ff-only origin main
-          bun run scripts/update-cask.ts "$VERSION" "$SHA256"
+          scripts/update-cask.sh "$VERSION" "$SHA256"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Casks/gamemode-bar.rb

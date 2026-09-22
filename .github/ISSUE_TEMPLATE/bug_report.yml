@@ -51,7 +51,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: macOS version, Homebrew vs zip install, version from Settings, Bun Y/N if you know.
-      placeholder: macOS 15.x, Homebrew cask, Settings version 0.2.x, Bun Y
+      description: macOS version, Homebrew vs curl install script, version from Settings.
+      placeholder: macOS 15.x, Homebrew cask, Settings version 0.2.x
     validations:
       required: true

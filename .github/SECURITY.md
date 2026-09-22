@@ -16,4 +16,4 @@ General questions about how authorization works, what the sudoers line allows, o
 
 ## Out of scope
 
-Vulnerabilities in macOS, Xcode, Bun, or Homebrew themselves — report those to the upstream vendor.
+Vulnerabilities in macOS, Xcode, or Homebrew themselves — report those to the upstream vendor.

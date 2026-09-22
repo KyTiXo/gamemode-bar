@@ -8,7 +8,6 @@ cask "gamemode-bar" do
   homepage "https://github.com/KyTiXo/gamemode-bar"
 
   depends_on arch: :arm64
-  depends_on formula: "bun"
   depends_on macos: :sonoma
 
   app "Game Mode Bar.app"
