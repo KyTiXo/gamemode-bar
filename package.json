@@ -8,6 +8,7 @@
 		"build:debug": "bun run scripts/build.ts debug",
 		"check": "bun test && bun run lint",
 		"commitlint": "commitlint --edit",
+		"sync-version": "bun run scripts/sync-version.ts",
 		"dev": "bun run install:local",
 		"install:local": "bun run scripts/install-local.ts",
 		"lint": "bunx biome check . && swiftc -typecheck -framework AppKit src/native/GameModeBar.swift",

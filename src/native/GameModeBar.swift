@@ -50,7 +50,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     private let versionItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let permissionsItem = NSMenuItem(title: "Check Permissions…", action: #selector(checkPermissions), keyEquivalent: "")
     private let settingsItem = NSMenuItem(title: "Settings…", action: nil, keyEquivalent: "")
-    private let toggleItem = NSMenuItem(title: "Toggle → ON", action: #selector(toggleAll), keyEquivalent: "")
+    private let toggleItem = NSMenuItem(title: "Enable Game Mode+", action: #selector(toggleAll), keyEquivalent: "")
     private let gameItem = NSMenuItem(title: "Game Mode", action: #selector(toggleGame), keyEquivalent: "")
     private let airDropItem = NSMenuItem(title: "No AirDrop (AWDL)", action: #selector(toggleAirDrop), keyEquivalent: "")
     private let quitItem = NSMenuItem(title: "Quit Game Mode Bar", action: #selector(terminate), keyEquivalent: "q")
@@ -355,16 +355,18 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
             NSTextTab(textAlignment: .right, location: featureStatusTabLocation, options: [:]),
         ]
         let font = NSFont.menuFont(ofSize: NSFont.systemFontSize)
+        let labelColor = on ? NSColor.labelColor : NSColor.secondaryLabelColor
+        let statusColor = on ? NSColor.secondaryLabelColor : NSColor.tertiaryLabelColor
         let attributed = NSMutableAttributedString(
             string: string,
             attributes: [
                 .font: font,
                 .paragraphStyle: paragraph,
-                .foregroundColor: NSColor.labelColor,
+                .foregroundColor: labelColor,
             ]
         )
         let statusRange = (string as NSString).range(of: status)
-        attributed.addAttribute(.foregroundColor, value: NSColor.secondaryLabelColor, range: statusRange)
+        attributed.addAttribute(.foregroundColor, value: statusColor, range: statusRange)
         return attributed
     }
 
@@ -386,11 +388,11 @@ private final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
 
     private func updateToggleTitle(from state: ModeState?) {
         guard let state else {
-            toggleItem.title = "Toggle Mode"
+            toggleItem.title = "Enable Game Mode+"
             return
         }
         let anyOn = state.gameModeChecked || state.noAirDropChecked
-        toggleItem.title = anyOn ? "Toggle → OFF" : "Toggle → ON"
+        toggleItem.title = anyOn ? "Disable Game Mode+" : "Enable Game Mode+"
     }
 
     private func applyStatusIcon(mode: IconMode) {

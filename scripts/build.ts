@@ -10,6 +10,8 @@ const run = async (command: string[]) => {
 	if ((await child.exited) !== 0) process.exit(1);
 };
 
+await run(["bun", "run", "scripts/sync-version.ts"]);
+
 await rm(debug, { force: true, recursive: true });
 await mkdir(debug, { recursive: true });
 await run([
