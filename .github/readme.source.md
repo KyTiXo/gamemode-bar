@@ -4,12 +4,14 @@ Native macOS menu-bar app. No Electron. **Toggle → ON/OFF** is the master swit
 
 ## Quick start
 
-Check prerequisites (Y = ready):
+Check prerequisites:
 
 ```sh
-echo "Bun: $(command -v bun >/dev/null && echo Y || echo N)"
-echo "Xcode (gamepolicyctl): $(test -x /Applications/Xcode.app/Contents/Developer/usr/bin/gamepolicyctl && echo Y || echo N)"
-echo "No AirDrop sudoers: $(test -f /etc/sudoers.d/gamemode-bar-awdl && echo Y || echo N)"
+printf '%s\0%s\0' \
+	Bun 'command -v bun' \
+	'Xcode (gamepolicyctl)' 'test -x /Applications/Xcode.app/Contents/Developer/usr/bin/gamepolicyctl' \
+	'No AirDrop sudoers' 'test -f /etc/sudoers.d/gamemode-bar-awdl' |
+	xargs -0 -n2 sh -c 'sh -c "$2" >/dev/null 2>&1 && echo "$1: installed" || echo "$1: missing"' _
 ```
 
 Homebrew (beta, in-repo tap):
@@ -57,4 +59,4 @@ Bun resolves from `GAME_MODE_BAR_BUN`, `~/.bun/bin`, Homebrew, or `PATH`. Overri
 - CI builds an ad-hoc signed, not notarized `.app` zip attached to GitHub **prereleases**.
 - Not at 1.0 yet.
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). [Contributing](CONTRIBUTING.md) · [Security](.github/SECURITY.md) · [Agents](AGENTS.md)

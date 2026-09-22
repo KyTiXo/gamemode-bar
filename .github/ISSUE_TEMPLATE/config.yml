@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature idea
+    url: https://github.com/KyTiXo/gamemode-bar/issues/new
+    about: Open an issue and say feature in the title — no formal template.

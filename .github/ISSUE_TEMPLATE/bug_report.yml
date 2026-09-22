@@ -1,0 +1,57 @@
+name: Bug report
+description: Something broke, regressed, or looks wrong.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Beta menu-bar app — thanks for filing. Search existing issues first.
+        Feature ideas: open a normal issue and put **feature** in the title.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched issues and did not find a duplicate.
+          required: true
+        - label: I included enough detail that someone could investigate.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area (rough guess is fine)
+      options:
+        - Menu / Settings
+        - Game Mode or AWDL behavior
+        - Build / install / Homebrew
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Expected vs actual, error text, whatever you have.
+      placeholder: Expected Game Mode+ to turn on; menu still shows off after toggle.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce (optional)
+      placeholder: Steps if you have them — skip if it was a one-off.
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: macOS version, Homebrew vs zip install, version from Settings, Bun Y/N if you know.
+      placeholder: macOS 15.x, Homebrew cask, Settings version 0.2.x, Bun Y
+    validations:
+      required: true

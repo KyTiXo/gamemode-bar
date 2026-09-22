@@ -89,6 +89,8 @@ The most common defect here is a change that works on the path you tested and is
 
 Most code changes need no documentation change. Agents can read the source.
 
+- Human contributor tone and expectations live in [CONTRIBUTING.md](CONTRIBUTING.md). Do not contradict it in PR text you draft for the user.
+- Do not edit `.github/pull_request_template.md` or `.github/ISSUE_TEMPLATE/` unless the user asks.
 - If user-facing copy or the readme-aura requirements card changes, edit `.github/readme.source.md` and run `bun run readme:build`, or rely on `.github/workflows/readme-aura.yml` on push to that file.
 - Do not hand-edit hashed `readme-aura-component-0-*.svg` assets expecting them to stick.
 - Do not import parent **shadPS4 / Bloodborne / BBLauncher** agent instructions from a sibling repo; they describe a different workspace.
