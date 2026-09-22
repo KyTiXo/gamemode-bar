@@ -52,5 +52,6 @@ jobs:
         run: |
           mkdir -p "$(brew --repository)/Library/Taps/kytixo"
           ln -sfn "${{ github.workspace }}" "$(brew --repository)/Library/Taps/kytixo/homebrew-gamemode-bar"
+          brew trust kytixo/gamemode-bar
           brew install --cask gamemode-bar
           brew uninstall --cask gamemode-bar
