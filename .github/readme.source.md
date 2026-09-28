@@ -1,6 +1,6 @@
 ![Game Mode Bar, menu-bar Game Mode for play, emulators, and AirPlay](./.github/assets/readme-banner.png)
 
-**[Website](https://kytixo.github.io/gamemode-bar/)** · [Install](https://kytixo.github.io/gamemode-bar/#install) · [Releases](https://github.com/KyTiXo/gamemode-bar/releases)
+<p align="center"><b><a href="https://kytixo.github.io/gamemode-bar/">Website</a></b> · <a href="https://kytixo.github.io/gamemode-bar/#install">Install</a> · <a href="https://github.com/KyTiXo/gamemode-bar/releases">Releases</a></p>
 
 Native macOS menu-bar app. No Electron. **Toggle → ON/OFF** is the master switch. Individual rows tune **macOS Game Mode** and **No AirDrop** (AWDL down). Open **Settings…** for **Run at startup**, **Activate on launch**, and **Check Permissions…** (Xcode and sudoers setup).
 
