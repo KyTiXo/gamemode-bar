@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - install.sh
+      - site/**
+      - Packaging/Info.plist
+      - Packaging/icon.png
+      - .github/workflows/pages.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,7 +30,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
       - name: Prepare Pages artifact
-        run: mkdir -p _pages && cp install.sh _pages/install.sh
+        run: |
+          VERSION="$(grep -A1 CFBundleShortVersionString Packaging/Info.plist | sed -n 's:.*<string>\(.*\)</string>.*:\1:p')"
+          mkdir -p _pages
+          cp install.sh Packaging/icon.png _pages/
+          sed "s/__VERSION__/${VERSION}/g" site/index.html > _pages/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _pages

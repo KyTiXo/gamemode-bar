@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Mode Bar: macOS Game Mode from your menu bar</title>
+<meta name="description" content="A native macOS menu-bar toggle that forces Game Mode and turns off AirDrop (AWDL) for emulators, streaming, and AirPlay.">
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+	:root {
+		--bg: #0e0f13;
+		--panel: #17191f;
+		--line: #262932;
+		--text: #e9eaee;
+		--muted: #8b8f9c;
+		--accent: #7cf29c;
+		--mono: ui-monospace, "SF Mono", Menlo, monospace;
+		color-scheme: dark;
+	}
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		background: radial-gradient(60rem 30rem at 50% -10rem, #1b2a22, transparent), var(--bg);
+		color: var(--text);
+		font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+	}
+	main { max-width: 44rem; margin: 0 auto; padding: 4rem 1.25rem 2rem; }
+	a { color: inherit; }
+	h2 { font-size: 1.25rem; margin: 3.5rem 0 1rem; }
+
+	header { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; }
+	header img { width: 4rem; height: 4rem; }
+	h1 { font-size: 3.25rem; line-height: 1; letter-spacing: -0.03em; margin: 1rem 0; }
+	h1 span { display: block; }
+	h1 span:last-child { color: var(--accent); }
+	.tagline { font-size: 1.25rem; font-weight: 600; margin: 0; }
+	.lede { color: var(--muted); margin: 0.5rem 0 1.5rem; }
+	.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+	.btn {
+		display: inline-block; padding: 0.6rem 1.1rem; border-radius: 0.6rem;
+		border: 1px solid var(--line); background: var(--panel);
+		font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; color: var(--text);
+	}
+	.btn.primary { background: var(--accent); border-color: var(--accent); color: #0b1a10; }
+	.version { color: var(--muted); font-size: 0.85rem; margin-top: 0.75rem; }
+
+	.menu {
+		width: 17rem; padding: 0.35rem; border-radius: 0.6rem;
+		background: rgba(40, 42, 50, 0.9); border: 1px solid #3a3d48;
+		box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.5);
+		font-size: 0.85rem; user-select: none;
+	}
+	.menu .row { display: flex; justify-content: space-between; padding: 0.25rem 0.6rem; border-radius: 0.3rem; }
+	.menu .row.click { cursor: pointer; }
+	.menu .row.click:hover { background: #3b6df0; }
+	.menu .off { color: var(--muted); }
+	.menu hr { border: 0; border-top: 1px solid #3a3d48; margin: 0.3rem 0.5rem; }
+	.menu .dim { color: var(--muted); }
+
+	.pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 3rem; padding: 0; list-style: none; }
+	.pills li { padding: 0.3rem 0.8rem; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font-size: 0.9rem; }
+
+	.tabs { display: flex; gap: 0.25rem; margin-bottom: 0.5rem; }
+	.tabs button { font: inherit; font-size: 0.9rem; padding: 0.3rem 0.8rem; border-radius: 0.4rem; border: 0; background: none; color: var(--muted); cursor: pointer; }
+	.tabs button[aria-selected="true"] { background: var(--panel); color: var(--text); }
+	.code { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 0.6rem; }
+	.code pre { margin: 0; padding: 1rem 4.5rem 1rem 1rem; overflow-x: auto; font: 0.85rem/1.7 var(--mono); }
+	.code .copy { position: absolute; top: 0.6rem; right: 0.6rem; font-size: 0.8rem; padding: 0.25rem 0.6rem; }
+	.note { color: var(--muted); font-size: 0.9rem; }
+	kbd { font: 0.85em var(--mono); background: var(--panel); border: 1px solid var(--line); border-radius: 0.3rem; padding: 0.05rem 0.35rem; }
+
+	.cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0.75rem; }
+	.cases div { background: var(--panel); border: 1px solid var(--line); border-radius: 0.6rem; padding: 1rem; }
+	.cases b { display: block; margin-bottom: 0.25rem; }
+	.cases p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+	footer { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+
+	@media (max-width: 40rem) {
+		header { grid-template-columns: 1fr; }
+		h1 { font-size: 2.5rem; }
+	}
+</style>
+</head>
+<body>
+<main>
+	<header>
+		<div>
+			<img src="icon.png" alt="">
+			<h1><span>Game</span><span>Mode</span><span>Bar</span></h1>
+			<p class="tagline">macOS Game Mode, on your terms</p>
+			<p class="lede">A native menu-bar toggle that forces Game Mode and turns off AirDrop for emulators, streaming, and AirPlay. No Electron, and it stays out of your way.</p>
+			<div class="actions">
+				<a class="btn primary" href="#install">Install</a>
+				<a class="btn" href="https://github.com/KyTiXo/gamemode-bar">GitHub Source</a>
+			</div>
+			<div class="version">Version __VERSION__ (beta) · Apple Silicon · macOS 14+</div>
+		</div>
+
+		<div class="menu" aria-label="Game Mode Bar menu preview">
+			<div class="row click" id="toggle">Enable Game Mode+</div>
+			<hr>
+			<div class="row"><span>Game Mode</span><span class="state off">Off</span></div>
+			<div class="row"><span>No AirDrop (AWDL)</span><span class="state off">Off</span></div>
+			<hr>
+			<div class="row"><span>Settings…</span><span class="dim">›</span></div>
+			<div class="row dim">Version __VERSION__</div>
+			<div class="row">Quit Game Mode Bar</div>
+		</div>
+	</header>
+
+	<ul class="pills">
+		<li>Native AppKit</li>
+		<li>One-click toggle</li>
+		<li>No AirDrop (AWDL)</li>
+		<li>Run at startup</li>
+		<li>Rolls back on failure</li>
+		<li>Least privilege</li>
+	</ul>
+
+	<h2 id="install">1. Install</h2>
+	<div class="tabs" role="tablist">
+		<button role="tab" aria-selected="true" data-cmd="curl -fsSL https://kytixo.github.io/gamemode-bar/install.sh | sh">Quick install</button>
+		<button role="tab" aria-selected="false" data-cmd="brew tap KyTiXo/gamemode-bar https://github.com/KyTiXo/gamemode-bar.git
+brew install --cask gamemode-bar">Homebrew</button>
+	</div>
+	<div class="code">
+		<pre id="cmd">curl -fsSL https://kytixo.github.io/gamemode-bar/install.sh | sh</pre>
+		<button class="btn copy" data-copy="cmd">Copy</button>
+	</div>
+	<p class="note">Beta builds are ad-hoc signed, not notarized. On first launch, right-click the app and choose <b>Open</b>.</p>
+
+	<h2>2. Authorize and play</h2>
+	<p>Open the controller icon in your menu bar and choose <kbd>Settings…</kbd> → <kbd>Check Permissions…</kbd>. It checks for full Xcode (which provides <code>gamepolicyctl</code>) and installs one sudoers rule that only allows <code>ifconfig awdl0 up</code> and <code>down</code>.</p>
+	<p>Then click <kbd>Enable Game Mode+</kbd>. Click it again to put everything back.</p>
+
+	<h2>When it helps</h2>
+	<div class="cases">
+		<div><b>AirPlay to a TV</b><p>AWDL traffic competes with the same Wi‑Fi. Turning off AirDrop can smooth out the stream.</p></div>
+		<div><b>Emulators and streaming</b><p>shadPS4, Moonlight, and other full-screen play that macOS doesn't treat as games.</p></div>
+		<div><b>Anything on a controller</b><p>Apple's automatic Game Mode is hit-or-miss. This forces the same policy path.</p></div>
+	</div>
+	<p class="note">Results vary by Mac, network, and workload. It's a policy toggle, not an FPS patch.</p>
+
+	<footer>
+		MIT © 2026 <a href="https://github.com/KyTiXo">KyTiXo</a> ·
+		<a href="https://github.com/KyTiXo/gamemode-bar">GitHub</a> ·
+		<a href="https://github.com/KyTiXo/gamemode-bar/releases">Releases</a>
+	</footer>
+</main>
+
+<script>
+	const cmd = document.getElementById("cmd");
+	document.querySelectorAll(".tabs button").forEach((tab) => {
+		tab.onclick = () => {
+			document.querySelectorAll(".tabs button").forEach((t) => t.setAttribute("aria-selected", t === tab));
+			cmd.textContent = tab.dataset.cmd;
+		};
+	});
+
+	document.querySelectorAll("[data-copy]").forEach((btn) => {
+		btn.onclick = async () => {
+			await navigator.clipboard.writeText(document.getElementById(btn.dataset.copy).textContent);
+			btn.textContent = "Copied";
+			setTimeout(() => (btn.textContent = "Copy"), 1500);
+		};
+	});
+
+	const toggle = document.getElementById("toggle");
+	let on = false;
+	toggle.onclick = () => {
+		on = !on;
+		toggle.textContent = on ? "Disable Game Mode+" : "Enable Game Mode+";
+		document.querySelectorAll(".menu .state").forEach((s) => {
+			s.textContent = on ? "On" : "Off";
+			s.classList.toggle("off", !on);
+		});
+	};
+</script>
+</body>
+</html>
