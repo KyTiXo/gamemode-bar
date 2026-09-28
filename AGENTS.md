@@ -1,6 +1,6 @@
 # Game Mode Bar
 
-Game Mode Bar is a native macOS menu-bar policy toggle. A Swift AppKit accessory app links **GameModeCore** directly for policy reads and transitions. No Electron, no Bun, no JavaScript IPC. The master control is **Toggle → Game Mode+**; individual rows set **macOS Game Mode** and **No AirDrop** (AWDL down).
+Game Mode Bar is a native macOS menu-bar policy toggle. A Swift AppKit accessory app links **GameModeCore** directly for policy reads and transitions. No Electron, no Bun, no JavaScript IPC. The master control is **Enable / Disable Game Mode+**; individual rows set **macOS Game Mode** and **No AirDrop** (AWDL down).
 
 ## What we never compromise on
 
