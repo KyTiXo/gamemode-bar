@@ -200,7 +200,7 @@ brew install --cask gamemode-bar">Homebrew</button>
 			</li>
 			<li>
 				<h3>Authorize</h3>
-				<p>Click the controller in your menu bar, then <kbd>Settings…</kbd> → <kbd>Check Permissions…</kbd>. It checks for full Xcode (which provides <code>gamepolicyctl</code>) and installs one sudoers rule that only allows <code>ifconfig awdl0 up</code> and <code>down</code>.</p>
+				<p>Click the controller in your menu bar, then <kbd>Settings…</kbd> → <kbd>Check Permissions…</kbd>. It checks for full Xcode (the only place Apple ships <code>gamepolicyctl</code>) and installs one sudoers rule that only allows <code>ifconfig awdl0 up</code> and <code>down</code>. No Xcode? No AirDrop still works; only the Game Mode row needs it.</p>
 			</li>
 			<li>
 				<h3>Play</h3>
@@ -211,13 +211,13 @@ brew install --cask gamemode-bar">Homebrew</button>
 
 	<section>
 		<h2>When it helps</h2>
-		<p class="sub">Apple's automatic Game Mode is hit-or-miss. This forces the same policy path.</p>
+		<p class="sub">macOS only turns on Game Mode for apps tagged as games. This turns it on for anything.</p>
 		<div class="cards">
-			<div class="card"><h3>AirPlay to a TV</h3><p>AWDL traffic competes with the same Wi‑Fi. Turning off AirDrop can smooth out the stream.</p></div>
-			<div class="card"><h3>Emulators and streaming</h3><p>shadPS4, Moonlight, and other full-screen play that macOS doesn't treat as games.</p></div>
+			<div class="card"><h3>AirPlay to a TV</h3><p>AirDrop's radio (AWDL) hops Wi‑Fi channels in the background. Keeping it off smooths out the stream.</p></div>
+			<div class="card"><h3>Emulators and streaming</h3><p>shadPS4, Moonlight, GeForce NOW, and other full-screen play that macOS doesn't treat as games.</p></div>
 			<div class="card"><h3>Anything on a controller</h3><p>If you're playing it, it gets Game Mode, whether or not macOS thinks it's a game.</p></div>
 		</div>
-		<p class="note">Results vary by Mac, network, and workload. It's a policy toggle, not an FPS patch.</p>
+		<p class="note">Why not just <code>sudo ifconfig awdl0 down</code>? macOS turns it back on within minutes. Game Mode Bar keeps it down while you play and restores it when you're done. Results vary by Mac, network, and workload. It's a policy toggle, not an FPS patch.</p>
 	</section>
 
 	<section>
