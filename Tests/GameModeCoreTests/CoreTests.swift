@@ -79,6 +79,31 @@ struct CoreTests {
 		TestFixtures.cleanupSandboxes()
 	}
 
+	@Test func statusHoldsAwdlDownOnlyWhileNoAirDropIsOn() async throws {
+		let fake = try TestFixtures.makeFake(awdl: .up, game: .off, policy: .auto)
+		let session = PolicySession(paths: fake.paths, runner: fake.runner, user: "kytix")
+		func macOSRaisesAwdl() throws {
+			try "up".write(toFile: "\(fake.root)/awdl", atomically: true, encoding: .utf8)
+		}
+		func downCount() throws -> Int {
+			try fake.log().split(separator: "\n").filter { $0 == "awdl down" }.count
+		}
+
+		_ = await session.setAwdl(.down, requireAuthorization: false)
+		try macOSRaisesAwdl()
+		let held = await session.status()
+		#expect(held.state?.noAirDropChecked == true)
+		#expect(try fake.read().awdl == "down")
+		#expect(try downCount() == 2)
+
+		_ = await session.setAwdl(.up, requireAuthorization: false)
+		let released = await session.status()
+		#expect(released.state?.noAirDropChecked == false)
+		#expect(try fake.read().awdl == "up")
+		#expect(try downCount() == 2)
+		TestFixtures.cleanupSandboxes()
+	}
+
 	@Test func masterToggleEnablesAwdlDownAndGameModeOn() async throws {
 		let fake = try TestFixtures.makeFake(awdl: .up, game: .off, policy: .auto)
 		let result = try await toggleMode(paths: fake.paths, runner: fake.runner)

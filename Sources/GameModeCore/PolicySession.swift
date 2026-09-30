@@ -4,6 +4,8 @@ public actor PolicySession {
 	private let paths: Paths
 	private let runner: CommandRunner
 	private let user: String
+	/// macOS re-raises awdl0 on its own; while set, status() lowers it again.
+	private var holdAwdlDown = false
 
 	public init(
 		paths: Paths = .fromEnv(),
@@ -27,7 +29,12 @@ public actor PolicySession {
 
 	public func status() async -> ActionResult {
 		do {
-			let snapshot = try await statusSnapshot()
+			var snapshot = try await statusSnapshot()
+			if holdAwdlDown, snapshot.authorization, snapshot.state.awdl == .up,
+				let state = try? await setAwdlMode(paths: paths, runner: runner, mode: .down)
+			{
+				snapshot.state = state
+			}
 			return ActionResult(
 				ok: true,
 				state: snapshot.state,
@@ -97,6 +104,7 @@ public actor PolicySession {
 				}
 			}
 			let result = try await toggleMode(paths: paths, runner: runner)
+			holdAwdlDown = result.state.noAirDropChecked
 			return .success(
 				state: result.state,
 				authorization: true,
@@ -145,6 +153,7 @@ public actor PolicySession {
 				}
 			}
 			let state = try await setAwdlMode(paths: paths, runner: runner, mode: mode)
+			holdAwdlDown = mode == .down
 			return .success(state: state, authorization: true)
 		} catch let error as TransitionError {
 			return .failure(message: error.message, detail: error.detail, state: error.state)
