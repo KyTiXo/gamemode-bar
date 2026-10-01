@@ -211,6 +211,18 @@ struct CoreTests {
 		TestFixtures.cleanupSandboxes()
 	}
 
+	@Test func detailSaysGameModeUnavailableWhenGamepolicyctlMissing() async throws {
+		let fake = try TestFixtures.makeFake(
+			awdl: .up,
+			game: .off,
+			policy: .auto,
+			includeGamepolicy: false
+		)
+		let state = try await readState(paths: fake.paths, runner: fake.runner)
+		#expect(state.detail == "AWDL up • Game Mode unavailable")
+		TestFixtures.cleanupSandboxes()
+	}
+
 	@Test func prerequisitesSudoersWhenAuthorizationMissing() async throws {
 		let fake = try TestFixtures.makeFake(awdl: .up, game: .off, policy: .auto)
 		let state = try await readState(paths: fake.paths, runner: fake.runner)
