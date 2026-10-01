@@ -104,6 +104,17 @@ struct CoreTests {
 		TestFixtures.cleanupSandboxes()
 	}
 
+	@Test func statusSeedsAwdlHoldFromLaunchState() async throws {
+		let fake = try TestFixtures.makeFake(awdl: .down, game: .off, policy: .auto)
+		let session = PolicySession(paths: fake.paths, runner: fake.runner, user: "kytix")
+		_ = await session.status()
+		try "up".write(toFile: "\(fake.root)/awdl", atomically: true, encoding: .utf8)
+		let held = await session.status()
+		#expect(held.state?.noAirDropChecked == true)
+		#expect(try fake.read().awdl == "down")
+		TestFixtures.cleanupSandboxes()
+	}
+
 	@Test func masterToggleEnablesAwdlDownAndGameModeOn() async throws {
 		let fake = try TestFixtures.makeFake(awdl: .up, game: .off, policy: .auto)
 		let result = try await toggleMode(paths: fake.paths, runner: fake.runner)

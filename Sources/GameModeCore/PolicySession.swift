@@ -4,8 +4,8 @@ public actor PolicySession {
 	private let paths: Paths
 	private let runner: CommandRunner
 	private let user: String
-	/// macOS re-raises awdl0 on its own; while set, status() lowers it again.
-	private var holdAwdlDown = false
+	/// macOS re-raises awdl0 on its own; while true, status() lowers it again. nil until the first status() seeds it from awdl0.
+	private var holdAwdlDown: Bool?
 
 	public init(
 		paths: Paths = .fromEnv(),
@@ -30,7 +30,8 @@ public actor PolicySession {
 	public func status() async -> ActionResult {
 		do {
 			var snapshot = try await statusSnapshot()
-			if holdAwdlDown, snapshot.authorization, snapshot.state.awdl == .up,
+			if holdAwdlDown == nil { holdAwdlDown = snapshot.state.awdl == .down }
+			if holdAwdlDown == true, snapshot.authorization, snapshot.state.awdl == .up,
 				let state = try? await setAwdlMode(paths: paths, runner: runner, mode: .down)
 			{
 				snapshot.state = state
