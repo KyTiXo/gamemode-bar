@@ -60,9 +60,12 @@ public func buildSystemState(
 	let gameModeChecked = gameMode == .on
 	let noAirDropChecked = awdl == .down
 	let policyLabel = gamePolicy == .unknown ? "unknown policy" : "\(gamePolicy.rawValue) policy"
+	let gameDetail = xcode.available
+		? "Game Mode \(gameMode.rawValue) (\(policyLabel))"
+		: "Game Mode unavailable"
 	return SystemState(
 		awdl: awdl,
-		detail: "AWDL \(awdl.rawValue) • Game Mode \(gameMode.rawValue) (\(policyLabel))",
+		detail: "AWDL \(awdl.rawValue) • \(gameDetail)",
 		gameMode: gameMode,
 		gameModeChecked: gameModeChecked,
 		gamePolicy: gamePolicy,
