@@ -9,16 +9,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   generate:
     runs-on: ubuntu-latest
+    # readme-aura commits and pushes the regenerated README
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Generate README
-        uses: collectioneur/readme-aura@main
+        uses: collectioneur/readme-aura@74268b4e310b8f4074e8a9c5a8e5e5210dd3436a # v1.0.20
         with:
           source: .github/readme.source.md
           github_token: ${{ secrets.GITHUB_TOKEN }}
